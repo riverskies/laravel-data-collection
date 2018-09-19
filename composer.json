@@ -1,7 +1,7 @@
 {
     "name": "riverskies/laravel-data-collection",
     "description": "Data collection package for Laravel to replace SQL Database Views",
-    "version": "1.0",
+    "version": "1.0.1",
     "license": "MIT",
     "authors": [
         {
