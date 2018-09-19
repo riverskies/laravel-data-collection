@@ -2,6 +2,7 @@
     "name": "riverskies/laravel-data-collection",
     "description": "Data collection package for Laravel to replace SQL Database Views",
     "version": "1.0.1",
+    "minimum-stability": "stable",
     "license": "MIT",
     "authors": [
         {
@@ -13,7 +14,9 @@
             "email": "gabor@riverskies.com"
         }
     ],
-    "require": {},
+    "require": {
+        "laravel/framework": "5.7.*"
+    },
     "require-dev": {
         "orchestra/testbench": "^3.6",
         "phpunit/phpunit": "^7.2"
