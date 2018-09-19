@@ -29,7 +29,10 @@ abstract class DataCollection
             case 'filteredBy':
                 $this->filterItems($arguments);
                 return $this;
-                break;
+            case 'orderedBy':
+                $this->orderItems($arguments);
+                return $this;
+
         }
 
         $this->items = $this->dataMapper($this->items);
@@ -45,9 +48,23 @@ abstract class DataCollection
             case 'filteredBy':
                 $instance->filterItems($arguments);
                 break;
+            case 'orderedBy':
+
+                $instance->orderItems(...$arguments);
+                break;
         }
 
         return $instance;
+    }
+
+    private function orderItems($field, $order = 'asc')
+    {
+        $direction = rtrim(strtolower($order), 'ending');
+        $sorting = $direction == 'desc' ? 'sortByDesc' : 'sortBy';
+
+        $this->items = $this->items->$sorting($field)->values();
+
+        return $this;
     }
 
     private function filterItems($arguments)

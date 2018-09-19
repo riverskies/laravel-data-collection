@@ -207,4 +207,91 @@ class DataCollectionTest extends TestCase
 
         $this->assertEquals([4], $collection->toArray());
     }
+
+    /** @test */
+    public function it_optionally_apply_ordering_by_an_internal_field_in_ascending_order_by_default()
+    {
+        $class = new class extends DataCollection
+        {
+            protected function getData()
+            {
+                return [
+                    (object)[ 'name' => 'Alpha' ],
+                    (object)[ 'name' => 'Delta' ],
+                    (object)[ 'name' => 'Beta' ],
+                ];
+            }
+        };
+
+        $collection = $class::orderedBy('name')->get();
+
+        $this->assertEquals([
+            (object)[ 'name' => 'Alpha' ],
+            (object)[ 'name' => 'Beta' ],
+            (object)[ 'name' => 'Delta' ],
+        ], $collection);
+    }
+
+    /** @test */
+    public function ordering_can_be_descending_by_passing_the_descending_or_desc_keyword_case_insensitively()
+    {
+        $class = new class extends DataCollection
+        {
+            protected function getData()
+            {
+                return [
+                    (object) ['name' => 'Alpha'],
+                    (object) ['name' => 'Delta'],
+                    (object) ['name' => 'Beta'],
+                ];
+            }
+        };
+
+        $collectionA = $class::orderedBy('name', 'desc')->get();
+        $collectionB = $class::orderedBy('name', 'descending')->get();
+        $collectionC = $class::orderedBy('name', 'DESC')->get();
+        $collectionD = $class::orderedBy('name', 'DESCENDING')->get();
+
+        $reversed = [
+            (object) ['name' => 'Delta'],
+            (object) ['name' => 'Beta'],
+            (object) ['name' => 'Alpha'],
+        ];
+
+        $this->assertEquals($reversed, $collectionA);
+        $this->assertEquals($reversed, $collectionB);
+        $this->assertEquals($reversed, $collectionC);
+        $this->assertEquals($reversed, $collectionD);
+    }
+
+
+    /** @test */
+    public function ordering_can_be_chained_to_a_filter()
+    {
+        $class = new class extends DataCollection
+        {
+            protected function getData()
+            {
+                return [
+                    (object) ['name' => 'Alpha'],
+                    (object) ['name' => 'Delta'],
+                    (object) ['name' => 'Beta'],
+                ];
+            }
+
+            protected function filteredByNotAlpha($item)
+            {
+                return $item->name != 'Alpha';
+            }
+
+        };
+
+        $collection = $class::filteredBy('notAlpha')->orderedBy('name')->get();
+
+        $this->assertEquals([
+            (object) ['name' => 'Beta'],
+            (object) ['name' => 'Delta'],
+        ], $collection);
+    }
+
 }
