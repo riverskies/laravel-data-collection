@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use Illuminate\Pagination\LengthAwarePaginator;
 use Riverskies\LaravelDataCollection\DataCollection;
 use Tests\TestCase;
 
@@ -288,5 +289,70 @@ class DataCollectionTest extends TestCase
 
         $this->assertEquals('Beta', $collection->get(0)->name);
         $this->assertEquals('Delta', $collection->get(1)->name);
+    }
+
+    /** @test */
+    public function it_can_use_pagination_with_default_length()
+    {
+        $class = new class extends DataCollection
+        {
+            protected function getData()
+            {
+                return ['A', 'B', 'C'];
+            }
+        };
+
+        $collection = $class::paginate();
+
+        $this->assertInstanceOf(LengthAwarePaginator::class, $collection);
+        $this->assertEquals(3, $collection->total());
+        $this->assertEquals(10, $collection->perPage());
+        $this->assertEquals(1, $collection->lastPage());
+        $this->assertFalse($collection->hasMorePages());
+    }
+
+    /** @test */
+    public function it_can_set_the_per_page_length_on_the_paginator()
+    {
+        $class = new class extends DataCollection
+        {
+            protected function getData()
+            {
+                return ['A', 'B', 'C'];
+            }
+        };
+
+        $collection = $class::paginate(2);
+
+        $this->assertInstanceOf(LengthAwarePaginator::class, $collection);
+        $this->assertEquals(3, $collection->total());
+        $this->assertEquals(2, $collection->perPage());
+        $this->assertEquals(2, $collection->lastPage());
+        $this->assertTrue($collection->hasMorePages());
+    }
+
+    /** @test */
+    public function it_can_use_the_pagination_chained()
+    {
+        $class = new class extends DataCollection
+        {
+            protected function getData()
+            {
+                return [1, 2, 3, 4];
+            }
+
+            protected function filteredByEven($item)
+            {
+                return $item % 2 == 0;
+            }
+        };
+
+        $collection = $class::filteredBy('even')->paginate();
+
+        $this->assertInstanceOf(LengthAwarePaginator::class, $collection);
+        $this->assertEquals(2, $collection->total());
+        $this->assertEquals(10, $collection->perPage());
+        $this->assertEquals(1, $collection->lastPage());
+        $this->assertFalse($collection->hasMorePages());
     }
 }

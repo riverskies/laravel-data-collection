@@ -2,6 +2,8 @@
 
 namespace Riverskies\LaravelDataCollection;
 
+use Illuminate\Pagination\LengthAwarePaginator;
+
 abstract class DataCollection
 {
     /** @var \Illuminate\Support\Collection */
@@ -44,7 +46,9 @@ abstract class DataCollection
 
         $this->items = $this->dataMapper($this->items);
 
-        return $this->items->{$method}(...$arguments);
+        return ($method == 'paginate')
+            ? $this->createPaginator(...$arguments)
+            : $this->items->{$method}(...$arguments);
     }
 
     /**
@@ -55,6 +59,10 @@ abstract class DataCollection
     public static function __callStatic($method, $arguments)
     {
         $instance = new static;
+
+        if ($method == 'paginate') {
+            return $instance->createPaginator(...$arguments);
+        }
 
         $instance->applyCriteria($method, $arguments);
 
@@ -107,6 +115,15 @@ abstract class DataCollection
         $this->items = $this->items->$sorting($field)->values();
 
         return true;
+    }
+
+    /**
+     * @param $perPage = 10
+     * @return LengthAwarePaginator
+     */
+    private function createPaginator($perPage = 10)
+    {
+        return new LengthAwarePaginator($this->items, $this->items->count(), $perPage);
     }
 
     /**
