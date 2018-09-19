@@ -23,6 +23,90 @@ class DataCollectionTest extends TestCase
     }
 
     /** @test */
+    public function it_is_countable()
+    {
+        $class = new class extends DataCollection
+        {
+            protected function getData()
+            {
+                return [1, 2, 3];
+            }
+        };
+
+        $this->assertCount(3, $class::all());
+    }
+
+    /** @test */
+    public function it_has_array_access()
+    {
+        $class = new class extends DataCollection
+        {
+            protected function getData()
+            {
+                return [1, 2, 3];
+            }
+        };
+
+        $this->assertEquals(2, $class::all()[1]);
+    }
+
+    /** @test */
+    public function it_is_arrayable()
+    {
+        $class = new class extends DataCollection
+        {
+            protected function getData()
+            {
+                return [1, 2, 3];
+            }
+        };
+
+        $this->assertEquals(2, $class::all()[1]);
+    }
+
+    /** @test */
+    public function it_is_an_iterator_aggregate()
+    {
+        $class = new class extends DataCollection
+        {
+            protected function getData()
+            {
+                return [1, 2, 3];
+            }
+        };
+
+        $this->assertInstanceOf(\ArrayIterator::class, $class::all()->getIterator());
+    }
+
+    /** @test */
+    public function it_is_jsonable()
+    {
+        $class = new class extends DataCollection
+        {
+            protected function getData()
+            {
+                return [1, 2, 3];
+            }
+        };
+
+        $this->assertEquals(json_encode([1, 2, 3]), $class::all()->toJson());
+    }
+
+    /** @test */
+    public function it_is_json_serializable()
+    {
+        $class = new class extends DataCollection
+        {
+            protected function getData()
+            {
+                return [1, 2, 3];
+            }
+        };
+
+        $this->assertEquals(json_encode([1, 2, 3]), json_encode($class));
+    }
+
+    /** @test */
     public function it_returns_all_items_when_calling_all()
     {
         $class = new class extends DataCollection
