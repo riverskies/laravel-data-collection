@@ -17,6 +17,9 @@ abstract class DataCollection implements ArrayAccess, Arrayable, Countable, Iter
     /** @var \Illuminate\Support\Collection */
     private $items;
 
+    /** @var bool */
+    private $alreadyMapped = false;
+
     /**
      * @return mixed
      */
@@ -52,7 +55,10 @@ abstract class DataCollection implements ArrayAccess, Arrayable, Countable, Iter
             return $this;
         }
 
-        $this->items = $this->dataMapper($this->items);
+        if (!$this->alreadyMapped) {
+            $this->items = $this->dataMapper($this->items);
+            $this->alreadyMapped = true;
+        }
 
         return ($method == 'paginate')
             ? $this->createPaginator(...$arguments)

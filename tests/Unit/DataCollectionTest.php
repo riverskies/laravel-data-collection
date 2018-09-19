@@ -439,4 +439,28 @@ class DataCollectionTest extends TestCase
         $this->assertEquals(1, $collection->lastPage());
         $this->assertFalse($collection->hasMorePages());
     }
+
+    /** @test */
+    public function it_does_not_map_its_collection_over_and_over_again()
+    {
+        $class = new class extends DataCollection
+        {
+            protected function getData()
+            {
+                return [1, 2, 3, 4];
+            }
+
+            protected function dataMapper($items)
+            {
+                return $items->map(function($item) {
+                    return $item * 10;
+                });
+            }
+        };
+
+        $collection = $class::all();
+
+        $this->assertEquals(10, $collection->first());
+        $this->assertEquals(40, $collection->last());
+    }
 }
