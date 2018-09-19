@@ -2,10 +2,18 @@
 
 namespace Riverskies\LaravelDataCollection;
 
+use ArrayAccess;
+use Countable;
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Pagination\LengthAwarePaginator;
+use IteratorAggregate;
+use JsonSerializable;
 
-abstract class DataCollection
+abstract class DataCollection implements ArrayAccess, Arrayable, Countable, IteratorAggregate, Jsonable, JsonSerializable
 {
+    use CollectionInterfaces;
+
     /** @var \Illuminate\Support\Collection */
     private $items;
 
