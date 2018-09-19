@@ -1,10 +1,10 @@
 <?php
 
-namespace Tests\Unit;
+namespace Riverskies\LaravelDataCollection\Tests\Unit;
 
 use Illuminate\Pagination\LengthAwarePaginator;
 use Riverskies\LaravelDataCollection\DataCollection;
-use Tests\TestCase;
+use Riverskies\LaravelDataCollection\Tests\TestCase;
 
 class DataCollectionTest extends TestCase
 {
