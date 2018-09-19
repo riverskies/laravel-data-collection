@@ -15,6 +15,13 @@ class DataCollectionTest extends TestCase
     }
 
     /** @test */
+    public function it_has_a_final_constructor()
+    {
+        $reflection = new \ReflectionClass(DataCollection::class);
+        $this->assertTrue($reflection->getConstructor()->isFinal());
+    }
+
+    /** @test */
     public function it_returns_all_items_when_calling_all()
     {
         $class = new class extends DataCollection
@@ -71,9 +78,9 @@ class DataCollectionTest extends TestCase
             }
         };
 
-        $collection = $class::filteredBy('even')->get();
+        $collection = $class::filteredBy('even');
 
-        $this->assertEquals([2, 4], $collection);
+        $this->assertEquals([2, 4], $collection->toArray());
     }
 
     /** @test */
@@ -92,9 +99,9 @@ class DataCollectionTest extends TestCase
             }
         };
 
-        $collection = $class::filteredBy(['equals' => 2])->get();
+        $collection = $class::filteredBy(['equals' => 2]);
 
-        $this->assertEquals([2], $collection);
+        $this->assertEquals([2], $collection->toArray());
     }
 
     /** @test */
@@ -118,11 +125,11 @@ class DataCollectionTest extends TestCase
             }
         };
 
-        $collectionA = $class::filteredBy('even', 'underTen')->get();
-        $collectionB = $class::filteredBy(['even', 'underTen'])->get();
+        $collectionA = $class::filteredBy('even', 'underTen');
+        $collectionB = $class::filteredBy(['even', 'underTen']);
 
-        $this->assertEquals([2], $collectionA);
-        $this->assertEquals([2], $collectionB);
+        $this->assertEquals([2], $collectionA->toArray());
+        $this->assertEquals([2], $collectionB->toArray());
     }
 
     /** @test */
@@ -206,5 +213,80 @@ class DataCollectionTest extends TestCase
         $collection = $class::filteredBy(['greaterThan' => 2])->filteredBy(['dividable' => 4]);
 
         $this->assertEquals([4], $collection->toArray());
+    }
+
+    /** @test */
+    public function it_optionally_applies_ordering_by_an_internal_field_in_ascending_order_by_default()
+    {
+        $class = new class extends DataCollection
+        {
+            protected function getData()
+            {
+                return [
+                    (object) ['name' => 'Alpha'],
+                    (object) ['name' => 'Delta'],
+                    (object) ['name' => 'Beta'],
+                ];
+            }
+        };
+
+        $collection = $class::orderedBy('name');
+
+        $this->assertEquals('Alpha', $collection->get(0)->name);
+        $this->assertEquals('Beta', $collection->get(1)->name);
+        $this->assertEquals('Delta', $collection->get(2)->name);
+    }
+
+    /** @test */
+    public function ordering_can_be_descending_by_passing_the_descending_or_desc_keyword_case_insensitively()
+    {
+        $class = new class extends DataCollection
+        {
+            protected function getData()
+            {
+                return [
+                    (object) ['name' => 'Alpha'],
+                    (object) ['name' => 'Delta'],
+                    (object) ['name' => 'Beta'],
+                ];
+            }
+        };
+
+        $collectionA = $class::orderedBy('name', 'desc');
+        $collectionB = $class::orderedBy('name', 'descending');
+        $collectionC = $class::orderedBy('name', 'DESC');
+        $collectionD = $class::orderedBy('name', 'DESCENDING');
+
+        foreach ([$collectionA, $collectionB, $collectionC, $collectionD] as $collection) {
+            $this->assertEquals('Delta', $collection->get(0)->name);
+            $this->assertEquals('Beta', $collection->get(1)->name);
+            $this->assertEquals('Alpha', $collection->get(2)->name);
+        }
+    }
+
+    /** @test */
+    public function ordering_can_be_chained_to_a_filter()
+    {
+        $class = new class extends DataCollection
+        {
+            protected function getData()
+            {
+                return [
+                    (object) ['name' => 'Alpha'],
+                    (object) ['name' => 'Delta'],
+                    (object) ['name' => 'Beta'],
+                ];
+            }
+
+            protected function filteredByNotAlpha($item)
+            {
+                return $item->name != 'Alpha';
+            }
+        };
+
+        $collection = $class::filteredBy('notAlpha')->orderedBy('name', 'asc');
+
+        $this->assertEquals('Beta', $collection->get(0)->name);
+        $this->assertEquals('Delta', $collection->get(1)->name);
     }
 }
