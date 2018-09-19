@@ -1,0 +1,39 @@
+{
+    "name": "riverskies/laravel-data-collection",
+    "description": "Data collection package for Laravel to replace SQL Database Views",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Barnabas Kecskes",
+            "email": "barnabas@riverskies.com"
+        },
+        {
+            "name": "Gabor Eperjesi",
+            "email": "gabor@riverskies.com"
+        }
+    ],
+    "require": {},
+    "require-dev": {
+        "orchestra/testbench": "^3.6",
+        "phpunit/phpunit": "^7.2",
+        "mockery/mockery": "^1.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Riverskies\\LaravelDataCollection\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+            ],
+            "aliases": {
+            }
+        }
+    }
+}
