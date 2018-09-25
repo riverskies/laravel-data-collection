@@ -119,12 +119,15 @@ class DataCollectionTest extends TestCase
 
         tap($class::all(), function($collection) use ($class) {
             $this->assertInstanceOf(get_class($class), $collection);
-            $this->assertEquals([1, 2, 3], $collection->all());
+            $expected = [1, 2, 3];
+            foreach ($collection as $key => $item) {
+                $this->assertEquals($expected[$key], $item);
+            }
         });
     }
 
     /** @test */
-    public function it_optionally_has_a_data_mapper_function()
+    public function it_returns_all_items_mapped_if_it_has_a_mapper_function_when_calling_all()
     {
         $class = new class extends DataCollection
         {
@@ -143,7 +146,10 @@ class DataCollectionTest extends TestCase
 
         tap($class::all(), function($collection) use ($class) {
             $this->assertInstanceOf(get_class($class), $collection);
-            $this->assertEquals([2, 4, 6], $collection->all());
+            $expected = [2, 4, 6];
+            foreach ($collection as $key => $item) {
+                $this->assertEquals($expected[$key], $item);
+            }
         });
     }
 
