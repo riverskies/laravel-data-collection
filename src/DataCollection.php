@@ -74,11 +74,17 @@ abstract class DataCollection implements ArrayAccess, Arrayable, Countable, Iter
     {
         $instance = new static;
 
-        if ($method == 'paginate') {
-            return $instance->createPaginator(...$arguments);
+        switch ($method) {
+            case 'paginate':
+                return $instance->createPaginator(...$arguments);
+            case 'all':
+                $instance->items = $instance->dataMapper($instance->items);
+                $instance->alreadyMapped = true;
+                break;
+            default:
+                $instance->applyCriteria($method, $arguments);
+                break;
         }
-
-        $instance->applyCriteria($method, $arguments);
 
         return $instance;
     }
