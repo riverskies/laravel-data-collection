@@ -130,9 +130,16 @@ abstract class DataCollection implements ArrayAccess, Arrayable, Countable, Iter
     private function orderItems($field, $order = 'asc')
     {
         $direction = rtrim(strtolower($order), 'ending');
-        $sorting = $direction == 'desc' ? 'sortByDesc' : 'sortBy';
+        $sortingMethod = $direction == 'desc' ? 'sortByDesc' : 'sortBy';
+        $customMethod = 'orderBy' . ucfirst($field);
 
-        $this->items = $this->items->$sorting($field)->values();
+        $argument = (!method_exists($this, $customMethod))
+            ? $field
+            : function($item, $index) use ($customMethod) {
+                return $this->$customMethod($item, $index);
+            };
+
+        $this->items = $this->items->$sortingMethod($argument)->values();
 
         return true;
     }
