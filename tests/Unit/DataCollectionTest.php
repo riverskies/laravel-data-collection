@@ -356,6 +356,33 @@ class DataCollectionTest extends TestCase
     }
 
     /** @test */
+    public function ordering_can_be_done_through_a_custom_method()
+    {
+        $class = new class extends DataCollection
+        {
+            protected function getData()
+            {
+                return [
+                    (object) ['name' => 'Alpha', 'colours' => ['white']],
+                    (object) ['name' => 'Beta', 'colours' => ['black', 'red']],
+                    (object) ['name' => 'Delta', 'colours' => []],
+                ];
+            }
+
+            protected function orderByColoursCount($item, $index)
+            {
+                return count($item->colours);
+            }
+        };
+
+        $collection = $class::orderedBy('coloursCount');
+
+        $this->assertEquals('Delta', $collection->get(0)->name);
+        $this->assertEquals('Alpha', $collection->get(1)->name);
+        $this->assertEquals('Beta', $collection->get(2)->name);
+    }
+
+    /** @test */
     public function ordering_can_be_chained_to_a_filter()
     {
         $class = new class extends DataCollection
