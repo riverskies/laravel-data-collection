@@ -55,10 +55,7 @@ abstract class DataCollection implements ArrayAccess, Arrayable, Countable, Iter
             return $this;
         }
 
-        if (!$this->alreadyMapped) {
-            $this->items = $this->dataMapper($this->items);
-            $this->alreadyMapped = true;
-        }
+        self::map($this);
 
         return ($method == 'paginate')
             ? $this->createPaginator(...$arguments)
@@ -78,8 +75,7 @@ abstract class DataCollection implements ArrayAccess, Arrayable, Countable, Iter
             case 'paginate':
                 return $instance->createPaginator(...$arguments);
             case 'all':
-                $instance->items = $instance->dataMapper($instance->items);
-                $instance->alreadyMapped = true;
+                self::map($instance);
                 break;
             default:
                 $instance->applyCriteria($method, $arguments);
@@ -129,6 +125,8 @@ abstract class DataCollection implements ArrayAccess, Arrayable, Countable, Iter
      */
     private function orderItems($field, $order = 'asc')
     {
+        self::map($this);
+
         $direction = rtrim(strtolower($order), 'ending');
         $sortingMethod = $direction == 'desc' ? 'sortByDesc' : 'sortBy';
         $customMethod = 'orderBy' . ucfirst($field);
@@ -165,5 +163,16 @@ abstract class DataCollection implements ArrayAccess, Arrayable, Countable, Iter
 
         $filter = is_numeric($key) ? ucfirst($value) : ucfirst($key);
         return ["filteredBy{$filter}", $value];
+    }
+
+    /**
+     * @param $instance
+     */
+    private static function map(&$instance)
+    {
+        if (!$instance->alreadyMapped) {
+            $instance->items = $instance->dataMapper($instance->items);
+            $instance->alreadyMapped = true;
+        }
     }
 }
