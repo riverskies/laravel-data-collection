@@ -383,6 +383,50 @@ class DataCollectionTest extends TestCase
     }
 
     /** @test */
+    public function ordering_must_imply_mapping_before_being_carried_out()
+    {
+        $class = new class extends DataCollection
+        {
+            protected function getData()
+            {
+                return [
+                    (object) ['passengers' => 400],
+                    (object) ['passengers' => 100],
+                    (object) ['passengers' => 500],
+                ];
+            }
+
+            protected function dataMapper($items)
+            {
+                $totalPassengers = $items->sum('passengers');
+                return $items->map(function($item) use ($totalPassengers) {
+                    return [
+                        'passengersCount' => $item->passengers,
+                        'passengersPercentage' => floatval($item->passengers / $totalPassengers * 100),
+                    ];
+                });
+            }
+
+            protected function filteredByPassengersCount($item)
+            {
+                return $item->passengers > 300;
+            }
+        };
+
+        $collectionA = $class::orderedBy('passengersPercentage');
+        $collectionB = $class::filteredBy('passengersCount')->orderedBy('passengersPercentage');
+
+        $this->assertCount(3, $collectionA);
+        $this->assertEquals(10.0, $collectionA->get(0)['passengersPercentage']);
+        $this->assertEquals(40.0, $collectionA->get(1)['passengersPercentage']);
+        $this->assertEquals(50.0, $collectionA->get(2)['passengersPercentage']);
+
+        $this->assertCount(2, $collectionB);
+        $this->assertEquals(floatval(4 / 9 * 100), $collectionB->get(0)['passengersPercentage']);
+        $this->assertEquals(floatval(5 / 9 * 100), $collectionB->get(1)['passengersPercentage']);
+    }
+
+    /** @test */
     public function ordering_can_be_chained_to_a_filter()
     {
         $class = new class extends DataCollection
