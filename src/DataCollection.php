@@ -148,7 +148,14 @@ abstract class DataCollection implements ArrayAccess, Arrayable, Countable, Iter
      */
     private function createPaginator($perPage = 10)
     {
-        return new LengthAwarePaginator($this->items, $this->items->count(), $perPage);
+        $page = request('page', 1);
+        $offset = ($page - 1) * $perPage;
+
+        return new LengthAwarePaginator(
+            $this->items->slice($offset, $perPage)->values(),
+            $this->items->count(),
+            $perPage
+        );
     }
 
     /**
