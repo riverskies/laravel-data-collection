@@ -2,7 +2,9 @@
 
 namespace Riverskies\LaravelDataCollection\Tests\Unit;
 
+use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Mockery;
 use Riverskies\LaravelDataCollection\DataCollection;
 use Riverskies\LaravelDataCollection\Tests\TestCase;
 
@@ -455,6 +457,8 @@ class DataCollectionTest extends TestCase
     /** @test */
     public function it_can_use_pagination_with_default_length()
     {
+        $this->mockPageInRequest(1);
+
         $class = new class extends DataCollection
         {
             protected function getData()
@@ -466,6 +470,7 @@ class DataCollectionTest extends TestCase
         $collection = $class::paginate();
 
         $this->assertInstanceOf(LengthAwarePaginator::class, $collection);
+        $this->assertCount(3, $collection);
         $this->assertEquals(3, $collection->total());
         $this->assertEquals(10, $collection->perPage());
         $this->assertEquals(1, $collection->lastPage());
@@ -475,6 +480,8 @@ class DataCollectionTest extends TestCase
     /** @test */
     public function it_can_set_the_per_page_length_on_the_paginator()
     {
+        $this->mockPageInRequest(1);
+
         $class = new class extends DataCollection
         {
             protected function getData()
@@ -486,6 +493,9 @@ class DataCollectionTest extends TestCase
         $collection = $class::paginate(2);
 
         $this->assertInstanceOf(LengthAwarePaginator::class, $collection);
+        $this->assertCount(2, $collection);
+        $this->assertEquals('A', $collection->get(0));
+        $this->assertEquals('B', $collection->get(1));
         $this->assertEquals(3, $collection->total());
         $this->assertEquals(2, $collection->perPage());
         $this->assertEquals(2, $collection->lastPage());
@@ -493,8 +503,31 @@ class DataCollectionTest extends TestCase
     }
 
     /** @test */
+    public function it_sets_the_offset_correctly()
+    {
+        $this->mockPageInRequest(2);
+
+        $class = new class extends DataCollection
+        {
+            protected function getData()
+            {
+                return ['A', 'B', 'C', 'D', 'E', 'F'];
+            }
+        };
+
+        $collection = $class::paginate(2);
+
+        $this->assertInstanceOf(LengthAwarePaginator::class, $collection);
+        $this->assertCount(2, $collection);
+        $this->assertEquals('C', $collection->get(0));
+        $this->assertEquals('D', $collection->get(1));
+    }
+
+    /** @test */
     public function it_can_use_the_pagination_chained()
     {
+        $this->mockPageInRequest(1);
+
         $class = new class extends DataCollection
         {
             protected function getData()
@@ -511,6 +544,7 @@ class DataCollectionTest extends TestCase
         $collection = $class::filteredBy('even')->paginate();
 
         $this->assertInstanceOf(LengthAwarePaginator::class, $collection);
+        $this->assertCount(2, $collection);
         $this->assertEquals(2, $collection->total());
         $this->assertEquals(10, $collection->perPage());
         $this->assertEquals(1, $collection->lastPage());
@@ -539,5 +573,12 @@ class DataCollectionTest extends TestCase
 
         $this->assertEquals(10, $collection->first());
         $this->assertEquals(40, $collection->last());
+    }
+
+    private function mockPageInRequest($page)
+    {
+        $requestMock = Mockery::mock(Request::class);
+        $requestMock->shouldReceive('all')->andReturn(['page' => $page]);
+        app()->instance('request', $requestMock);
     }
 }
